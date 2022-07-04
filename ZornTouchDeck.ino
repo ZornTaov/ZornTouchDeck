@@ -360,12 +360,28 @@ void loop() {
 		}
 	}
 
-	for (int b = 0; b < BUTTON_COUNT; b++) {
-		if (Screen::instance()->getKey(b)->justReleased()) {
-			//TODO update latch state
-		}
-		if (Screen::instance()->getKey(b)->justPressed()) {
-			//TODO do keypad action
+	for (uint8_t row = 0; row < BTN_ROWS; row++) {
+		for (uint8_t col = 0; col < BTN_COLS; col++) {
+			uint8_t b = col + row * BTN_COLS;
+			if (Screen::instance()->getKey(b)->justReleased()) {
+				//TODO re-draw logo when released
+				Screen::instance()->drawBasicButton(col, row, TFT_WHITE);
+			}
+			if (Screen::instance()->getKey(b)->justPressed()) {
+				//TODO do keypad action
+				// Beep
+				#ifdef speakerPin
+				if(generalconfig.beep){
+				  ledcAttachPin(speakerPin, 2);
+				  ledcWriteTone(2, 600);
+				  delay(50);
+				  ledcDetachPin(speakerPin);
+				  ledcWrite(2, 0);
+				}
+				#endif
+				//set button to white for "pressed" state
+				Screen::instance()->drawBasicButton(col, row, TFT_WHITE);
+			}
 		}
 	}
 }

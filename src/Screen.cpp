@@ -116,13 +116,7 @@ void Screen::drawHome() {
 						Configuration::instance()->getGConf()->menuButtonColor;
 				drawTransparent = true;
 			}
-			tft.setFreeFont(LABEL_FONT);
-			keys[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-				KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-				KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE, "",
-				KEY_TEXTSIZE);
-			keys[b].drawButton();
-			drawlogo(b, col, row, drawTransparent, false); // After drawing the button outline we call this to draw a logo.
+			drawButton(col, row, buttonBG, true, drawTransparent, false);
 		}
 	}
 }
@@ -190,23 +184,32 @@ void Screen::drawKeypad() {
 				drawTransparent = false;
 			} else {
 				//TODO implement color per button?
-				buttonBG =
-						isHome ?
+				buttonBG = isHome ?
 								Configuration::instance()->getGConf()->menuButtonColor :
 								Configuration::instance()->getGConf()->functionButtonColor;
 				drawTransparent = true;
 			}
 
-			tft.setFreeFont(LABEL_FONT);
-			keys[b].initButton(&tft,
-			KEY_X + col * (KEY_W + KEY_SPACING_X),
-			KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-			KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE, "\0",
-			KEY_TEXTSIZE);
-			keys[b].drawButton();
-			drawlogo(b, col, row, drawTransparent, hasLatch);
+			drawButton(col, row, buttonBG, true, drawTransparent, hasLatch);
 		}
 	}
+}
+
+void Screen::drawButton(uint8_t col, uint8_t row, uint16_t buttonBG, bool drawLogo, bool drawTransparent, bool hasLatch) {
+	uint8_t b = col + row * BTN_COLS;
+	drawBasicButton(col, row, buttonBG);
+	if(drawLogo) drawlogo(b, col, row, drawTransparent, hasLatch);
+}
+
+void Screen::drawBasicButton(uint8_t col, uint8_t row, uint16_t buttonBG) {
+	uint8_t b = col + row * BTN_COLS;
+	tft.setFreeFont(LABEL_FONT);
+	keys[b].initButton(&tft,
+		KEY_X + col * (KEY_W + KEY_SPACING_X),
+		KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+		KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE, "",
+		KEY_TEXTSIZE);
+	keys[b].drawButton();
 }
 
 /**

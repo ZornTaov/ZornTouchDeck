@@ -41,6 +41,8 @@ public:
 	void drawlatched(int b, int col, int row);
 	void drawlogo(int logonumber, int col, int row, bool transparent, bool latch);
 	void drawKeypad();
+	void drawBasicButton(uint8_t col, uint8_t row, uint16_t buttonBG);
+	void drawButton(uint8_t col, uint8_t row, uint16_t buttonBG, bool drawLogo, bool drawTransparent, bool hasLatch);
 	uint16_t read16(fs::File &f);
 	uint32_t read32(fs::File &f);
 	unsigned long convertHTMLtoRGB888(char *html);
