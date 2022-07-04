@@ -67,6 +67,11 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/BLE</locationURI>
 		</link>
 		<link>
+			<name>libraries/BluetoothSerial</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/BluetoothSerial</locationURI>
+		</link>
+		<link>
 			<name>libraries/ESP32</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/ESP32</locationURI>
@@ -120,6 +125,11 @@
 			<name>libraries/Wire</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/2.0.3/libraries/Wire</locationURI>
+		</link>
+		<link>
+			<name>libraries/cwalk</name>
+			<type>2</type>
+			<location>C:/Users/ZornCo/Documents/Arduino/libraries/cwalk</location>
 		</link>
 	</linkedResources>
 </projectDescription>

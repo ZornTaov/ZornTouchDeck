@@ -13,8 +13,8 @@ namespace ZTD {
 
 class ZTDMenu {
 	public:
+	//TODO different button count per menu?
 		ZTDButton buttons[BUTTON_COUNT - 1];
-		char logos[BUTTON_COUNT - 1][32];
 		static size_t getJsonSize();
 		friend void convertToJson(const ZTDMenu &src, JsonVariant dst);
 		friend void convertFromJson(JsonVariantConst src, ZTDMenu& dst);

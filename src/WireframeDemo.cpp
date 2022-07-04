@@ -61,12 +61,12 @@ namespace ZTD {
 		// in here is the only code actually interfacing with the OLED. so if you use a different lib, this is where to change it.
 
 		for (int i = 0; i < LinestoRender; i++) {
-			Screen::instance()->tft.drawLine(ORender[i].p0.x, ORender[i].p0.y, ORender[i].p1.x, ORender[i].p1.y, TFT_BLACK); // erase the old lines.
+			Screen::getTFT()->drawLine(ORender[i].p0.x, ORender[i].p0.y, ORender[i].p1.x, ORender[i].p1.y, TFT_BLACK); // erase the old lines.
 			//uint16_t color = TFT_BLUE;
 			//if (i < 4) color = TFT_RED;
 			//if (i > 7) color = TFT_GREEN;
 			//if (i > 11) color = TFT_WHITE;
-			Screen::instance()->tft.drawLine(Render[i].p0.x, Render[i].p0.y, Render[i].p1.x, Render[i].p1.y, Render[i].c);
+			Screen::getTFT()->drawLine(Render[i].p0.x, Render[i].p0.y, Render[i].p1.x, Render[i].p1.y, Render[i].c);
 		}
 		OldLinestoRender = LinestoRender;
 	}

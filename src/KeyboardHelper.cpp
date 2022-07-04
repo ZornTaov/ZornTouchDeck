@@ -289,27 +289,27 @@ void KeyboardHelper::specialFunction(int value) {
 		if (Screen::instance()->ledBrightness > 25) {
 			Screen::instance()->ledBrightness = Screen::instance()->ledBrightness - 25;
 			ledcWrite(BL_CHANNEL, Screen::instance()->ledBrightness);
-			Configuration::instance()->savedStates.putInt("ledBrightness", Screen::instance()->ledBrightness);
+			Configuration::instance()->savedStates->putInt("ledBrightness", Screen::instance()->ledBrightness);
 		}
 		break;
 	case 3: // Display Brightness Up
 		if (Screen::instance()->ledBrightness < 230) {
 			Screen::instance()->ledBrightness = Screen::instance()->ledBrightness + 25;
 			ledcWrite(BL_CHANNEL, Screen::instance()->ledBrightness);
-			Configuration::instance()->savedStates.putInt("ledBrightness", Screen::instance()->ledBrightness);
+			Configuration::instance()->savedStates->putInt("ledBrightness", Screen::instance()->ledBrightness);
 		}
 		break;
 #ifdef touchInterruptPin
 	case 4: // Sleep Enabled
-		if (Configuration::instance()->generalConfig.sleepEnable) {
-			Configuration::instance()->generalConfig.sleepEnable = false;
+		if (Configuration::instance()->getGConf()->sleepEnable) {
+			Configuration::instance()->getGConf()->sleepEnable = false;
 			Serial.println("[INFO]: Sleep disabled.");
 		} else {
-			Configuration::instance()->generalConfig.sleepEnable = true;
-			Configuration::instance()->Interval = Configuration::instance()->generalConfig.sleepTimer * 60000;
+			Configuration::instance()->getGConf()->sleepEnable = true;
+			Configuration::instance()->Interval = Configuration::instance()->getGConf()->sleepTimer * 60000;
 			Serial.println("[INFO]: Sleep enabled.");
 			Serial.print("[INFO]: Timer set to: ");
-			Serial.println(Configuration::instance()->generalConfig.sleepTimer);
+			Serial.println(Configuration::instance()->getGConf()->sleepTimer);
 		}
 		break;
 #endif
@@ -433,12 +433,12 @@ void KeyboardHelper::bleKeyboardAction(int action, int value, char *symbol) {
 		sendOptionCombo(value);
 		break;
 	case 10: // Helpers
-		pressKey(Configuration::instance()->generalConfig.modifier1);
-		pressKey(Configuration::instance()->generalConfig.modifier2);
-		pressKey(Configuration::instance()->generalConfig.modifier3);
+		pressKey(Configuration::instance()->getGConf()->modifier1);
+		pressKey(Configuration::instance()->getGConf()->modifier2);
+		pressKey(Configuration::instance()->getGConf()->modifier3);
 		sendFnKey(value);
 		Configuration::getBleKeyboard()->releaseAll();
-		delay(Configuration::instance()->generalConfig.helperDelay);
+		delay(Configuration::instance()->getGConf()->helperDelay);
 		break;
 	case 11: // Special functions
 		specialFunction(value);

@@ -16,10 +16,13 @@ AsyncWebServer webserver(80);
 
 using namespace ZTD;
 
-WireframeDemo* wireframeDemo;
+bool loadingDone = false;
+WireframeDemo *wireframeDemo;
+
 void initDisplay() {
 	Serial.println("[INFO]: Loading saved brightness state");
-	Screen::instance()->ledBrightness = Configuration::instance()->savedStates.getInt("ledBrightness", 255);
+	Screen::instance()->ledBrightness =
+			Configuration::instance()->savedStates->getInt("ledBrightness", 255);
 
 	// Setup PWM channel and attach pin bl_pin
 	ledcSetup(BL_CHANNEL, 5000, 8);
@@ -31,19 +34,20 @@ void initDisplay() {
 	ledcWrite(BL_CHANNEL, Screen::instance()->ledBrightness); // Start @ initial Brightness
 
 	// Initialise the TFT screen
-	Screen::instance()->tft.init();
+	Screen::getTFT()->init();
 
 	// Set the rotation before we calibrate
-	Screen::instance()->tft.setRotation(1);
+	Screen::getTFT()->setRotation(1);
 
 	// Clear the screen
-	Screen::instance()->tft.fillScreen(TFT_GREEN);
+	Screen::getTFT()->fillScreen(TFT_BLACK);
 }
 
 void initFileSystem() {
 	if (!FILESYSTEM.begin()) {
 		Serial.println("[ERROR]: FILESYSTEM initialisation failed!");
-		Screen::instance()->drawErrorMessage("Failed to init FILESYSTEM! Did you upload the data folder?");
+		Screen::instance()->drawErrorMessage(
+				"Failed to init FILESYSTEM! Did you upload the data folder?");
 		while (1)
 			yield(); // We stop here
 	}
@@ -54,9 +58,8 @@ void initFileSystem() {
 }
 
 void initWifiConfig() {
-	//------------------ Load Wifi Config ----------------------------------------------
 	Serial.println("[INFO]: Loading Wifi Config");
-	if (!Configuration::instance()->loadMainConfig()) {
+	if (!Configuration::instance()->loadWifiConfig()) {
 		Serial.println("[WARNING]: Failed to load WiFi Credentials!");
 	} else {
 		Serial.println("[INFO]: WiFi Credentials Loaded");
@@ -70,16 +73,16 @@ void splashScreen() {
 	// If we are woken up we do not need the splash screen
 	if (wakeup_reason > 0) {
 		// But we do draw something to indicate we are waking up
-		Screen::instance()->tft.setTextFont(2);
-		Screen::instance()->tft.println(" Waking up...");
+		Screen::getTFT()->setTextFont(2);
+		Screen::getTFT()->println(" Waking up...");
 	} else {
-		// Draw a splash screen
+		//TODO Draw a splash screen
 		//drawBmp("/logos/freetouchdeck_logo.bmp", 0, 0);
-		Screen::instance()->tft.setCursor(1, 3);
-		Screen::instance()->tft.setTextFont(2);
-		Screen::instance()->tft.setTextSize(1);
-		Screen::instance()->tft.setTextColor(TFT_WHITE, TFT_BLACK);
-		//Screen::instance()->tft.printf("Loading version %s\n", versionnumber);
+		Screen::getTFT()->setCursor(1, 3);
+		Screen::getTFT()->setTextFont(2);
+		Screen::getTFT()->setTextSize(1);
+		Screen::getTFT()->setTextColor(TFT_WHITE, TFT_BLACK);
+		//Screen::getTFT()->printf("Loading version %s\n", versionnumber);
 		//Serial.printf("[INFO]: Loading version %s\n", versionnumber);
 	}
 }
@@ -89,17 +92,13 @@ void setup() {
 	Serial.setDebugOutput(true);
 	Serial.println("");
 
-	Configuration::instance()->savedStates.begin("ftd", false);
-//	Serial.println("[INFO]: Reading latch stated back from memory:");
-//	Configuration::instance()->savedStates.getBytes("latched", Configuration::instance()->islatched, sizeof(Configuration::instance()->islatched));
-//
-//	for(int i = 0; i < sizeof(islatched); i++){
-//		Serial.print(islatched[i]);
-//	}
-//	Serial.println();
+	Configuration::instance()->savedStates->begin("ftd", false);
 
 // --------------- Init Display -------------------------
 	initDisplay();
+
+	wireframeDemo = new WireframeDemo();
+	wireframeDemo->setupDemo();
 
 // -------------- Start filesystem ----------------------
 	initFileSystem();
@@ -108,14 +107,15 @@ void setup() {
 	initWifiConfig();
 
 // ----------------- Load webserver ---------------------
+	//TODO Wifi
 	//handlerSetup();
-
 // ------------------- Splash screen --------------------
 	splashScreen();
 
 // ----------------- Calibrate Touch --------------------
 #ifndef USECAPTOUCH
 	Serial.println("[INFO]: Waiting for touch calibration...");
+	//TODO touch calibrate
 	//touch_calibrate();
 	Serial.println("[INFO]: Touch calibration completed!");
 #endif // USECAPTOUCH
@@ -126,18 +126,19 @@ void setup() {
 	Configuration::instance()->checkfile("/config/menu.json");
 	//Configuration::instance()->checkfile("/config/general.json");
 
-	Screen::instance()->tft.setFreeFont(LABEL_FONT);
+	Screen::getTFT()->setFreeFont(LABEL_FONT);
 
+// --------------------- Load Files ---------------------
 
+	//	Serial.println("[INFO]: Reading latch stated back from memory:");
+	//	Configuration::instance()->savedStates.getBytes("latched", Configuration::instance()->islatched, sizeof(Configuration::instance()->islatched));
+	//
+	//	for(int i = 0; i < sizeof(islatched); i++){
+	//		Serial.print(islatched[i]);
+	//	}
+	//	Serial.println();
 
-
-
-
-
-
-
-
-//------------------BLE Initialization ------------------------------------------------------------------------
+//----------------- BLE Initialization ------------------
 #ifdef USEUSBHID
 
 	// initialize control over the keyboard:
@@ -146,10 +147,37 @@ void setup() {
 
 #else
 	Serial.println("[INFO]: Starting BLE");
-	Configuration::instance()->bleKeyboard->begin();
+	Configuration::getBleKeyboard()->begin();
 #endif //USEUSBHID
 
-// ---------------- Printing version numbers -----------------------------------------------
+//------------- Speaker Initialization ------------------
+	Serial.println("[INFO]: Init speakerPin");
+#ifdef speakerPin
+  ledcSetup(2, 500, 8);
+
+  if(generalconfig.beep){
+    ledcAttachPin(speakerPin, 2);
+    ledcWriteTone(2, 600);
+    delay(150);
+    ledcDetachPin(speakerPin);
+    ledcWrite(2, 0);
+
+    ledcAttachPin(speakerPin, 2);
+    ledcWriteTone(2, 800);
+    delay(150);
+    ledcDetachPin(speakerPin);
+    ledcWrite(2, 0);
+
+    ledcAttachPin(speakerPin, 2);
+    ledcWriteTone(2, 1200);
+    delay(150);
+    ledcDetachPin(speakerPin);
+    ledcWrite(2, 0);
+  }
+
+#endif // defined(speakerPin)
+
+// ---------------- Printing version numbers ------------
 #ifdef USEUSBHID
 	Serial.println("[INFO]: Using USB Keyboard");
 #else
@@ -164,29 +192,181 @@ void setup() {
 
 // ---------------- Start the first keypad -------------
 	// Draw background
-	Screen::instance()->tft.fillScreen(Configuration::instance()->generalConfig.backgroundColor);
+	Screen::getTFT()->fillScreen(
+			Configuration::instance()->getGConf()->backgroundColor);
 
 	// Draw keypad
 	Serial.println("[INFO]: Drawing keypad");
-	//drawKeypad();
+	Screen::instance()->drawKeypad();
 
 #ifdef touchInterruptPin
-	if (Configuration::instance()->generalConfig.sleepEnable) {
+	if (Configuration::instance()->getGConf()->sleepEnable) {
 		pinMode(touchInterruptPin, INPUT_PULLUP);
-		Configuration::instance()->Interval = Configuration::instance()->generalConfig.sleepTimer * 60000;
+		Configuration::instance()->Interval =
+				Configuration::instance()->getGConf()->sleepTimer * 60000;
 		Serial.println("[INFO]: Sleep enabled.");
 		Serial.print("[INFO]: Sleep timer = ");
-		Serial.print(Configuration::instance()->generalConfig.sleepTimer);
+		Serial.print(Configuration::instance()->getGConf()->sleepTimer);
 		Serial.println(" minutes");
 		//Configuration::instance()->isLatched[28] = 1;
 	}
 #endif // touchInterruptPin
 
+	loadingDone = true;
 	Serial.println("[INFO]: Boot completed and successful!");
-	wireframeDemo = new WireframeDemo();
-	wireframeDemo->setupDemo();
+}
+
+void readSerial() {
+	if (Serial.available()) {
+		String command = Serial.readStringUntil(' ');
+		if (command == "cal") {
+			FILESYSTEM.remove(CALIBRATION_FILE);
+			ESP.restart();
+		} else if (command == "restart") {
+			Serial.println("[WARNING]: Restarting");
+			ESP.restart();
+		}
+		/* else if (command == "setssid") {
+		 String value = Serial.readString();
+		 if (saveWifiSSID(value)) {
+		 Serial.printf("[INFO]: Saved new SSID: %s\n", value.c_str());
+		 loadMainConfig();
+		 Serial.println("[INFO]: New configuration loaded");
+		 }
+		 } else if (command == "setpassword") {
+		 String value = Serial.readString();
+		 if (saveWifiPW(value)) {
+		 Serial.printf("[INFO]: Saved new Password: %s\n",
+		 value.c_str());
+		 loadMainConfig();
+		 Serial.println("[INFO]: New configuration loaded");
+		 }
+		 } else if (command == "setwifimode") {
+		 String value = Serial.readString();
+		 if (saveWifiMode(value)) {
+		 Serial.printf("[INFO]: Saved new WiFi Mode: %s\n",
+		 value.c_str());
+		 loadMainConfig();
+		 Serial.println("[INFO]: New configuration loaded");
+		 }
+		 } else if (command == "reset") {
+		 String file = Serial.readString();
+		 Serial.printf("[INFO]: Resetting %s.json now\n", file.c_str());
+		 resetconfig(file);
+		 } */
+		//Serial.println(command);
+	}
+}
+
+void saveLatches() {
+	for (uint8_t menu = 0; menu < BUTTON_COUNT - 1; menu++) {
+		for (uint8_t button = 0; button < BUTTON_COUNT - 1; button++) {
+			char key[] = "latched-00-00";
+			key[8] += menu / 10;
+			key[9] += menu % 10;
+			key[11] += button / 10;
+			key[12] += button % 10;
+			Configuration::instance()->savedStates->putBool(key,
+					&Configuration::getMenus()[menu].buttons[button].latch);
+		}
+	}
+}
+
+#ifdef touchInterruptPin
+void checkSleepTimer() {
+	if (Configuration::instance()->getGConf()->sleepEnable) {
+		if (millis()
+				> Configuration::instance()->previousMillis
+						+ Configuration::instance()->Interval) {
+
+			// The timer has ended and we are going to sleep.
+			Screen::getTFT()->fillScreen(TFT_BLACK);
+			Serial.println("[INFO]: Going to sleep.");
+#ifdef speakerPin
+        if(generalconfig.beep){
+        ledcAttachPin(speakerPin, 2);
+        ledcWriteTone(2, 1200);
+        delay(150);
+        ledcDetachPin(speakerPin);
+        ledcWrite(2, 0);
+
+        ledcAttachPin(speakerPin, 2);
+        ledcWriteTone(2, 800);
+        delay(150);
+        ledcDetachPin(speakerPin);
+        ledcWrite(2, 0);
+
+        ledcAttachPin(speakerPin, 2);
+        ledcWriteTone(2, 600);
+        delay(150);
+        ledcDetachPin(speakerPin);
+        ledcWrite(2, 0);
+        }
+#endif // defined(speakerPin)
+			Serial.println("[INFO]: Saving latched states");
+
+			saveLatches();
+			esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
+			esp_deep_sleep_start();
+		}
+	}
+}
+#endif // defined(touchInterruptPin)
+
+bool getPressed(uint16_t *t_x, uint16_t *t_y) {
+#ifdef USECAPTOUCH
+    if (ts.touched())
+    {
+
+      // Retrieve a point
+      TS_Point p = ts.getPoint();
+
+      //Flip things around so it matches our screen rotation
+      p.x = map(p.x, 0, 320, 320, 0);
+      t_y = p.x;
+      t_x = p.y;
+
+      return true;
+    }
+
+#else
+	return Screen::getTFT()->getTouch(t_x, t_y);
+#endif
 }
 
 void loop() {
-	wireframeDemo->loopDemo();
+
+	readSerial();
+
+	//wireframeDemo->loopDemo();
+
+#ifdef touchInterruptPin
+	checkSleepTimer();
+#endif // defined(touchInterruptPin)
+
+	// Touch coordinates are stored here
+	uint16_t t_x = 0, t_y = 0;
+	bool pressed = getPressed(&t_x, &t_y);
+
+	// Check if the X and Y coordinates of the touch are within one of our buttons
+	for (uint8_t b = 0; b < BUTTON_COUNT; b++) {
+		if (pressed && Screen::instance()->getKey(b)->contains(t_x, t_y)) {
+			Screen::instance()->getKey(b)->press(true); // tell the button it is pressed
+
+			// After receiving a vallid touch reset the sleep timer
+			Configuration::instance()->previousMillis = millis();
+		} else {
+			Screen::instance()->getKey(b)->press(false); // tell the button it is NOT pressed
+		}
+	}
+
+	for (int b = 0; b < BUTTON_COUNT; b++) {
+		if (Screen::instance()->getKey(b)->justReleased()) {
+			//TODO update latch state
+		}
+		if (Screen::instance()->getKey(b)->justPressed()) {
+			//TODO do keypad action
+		}
+	}
 }
+

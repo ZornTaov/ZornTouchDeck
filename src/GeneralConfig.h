@@ -13,10 +13,10 @@ namespace ZTD {
 
 class GeneralConfig {
 public:
-	int menuButtonColor	 = 0x009bf4;
-	int functionButtonColor = 0x00efcb;
-	int backgroundColor	 = 0x000000;
-	int latchedColor		 = 0xfe0149;
+	int menuButtonColor			 = 0x009bf4;
+	int functionButtonColor		 = 0x00efcb;
+	int backgroundColor			 = 0x000000;
+	int latchedColor			 = 0xfe0149;
 	bool	 sleepEnable		 = true;
 	uint16_t sleepTimer			 = 10;
 	bool	 beepEnable			 = false;
@@ -25,9 +25,13 @@ public:
 	uint8_t  modifier3			 = 0;
 	uint16_t helperDelay		 = 500;
 
-	char 	 homebutton[64]		 = "/logos/home.bmp";
-	char 	 configurator[64]	 = "/logos/wifi.bmp";
-	char 	 splashscreen[64]	 = "/logos/freetouchdeck_logo.bmp";
+	char	 homebutton[64]		 = "/logos/home.bmp";
+	char	 configuratorLogo[64]	 = "/logos/wifi.bmp";
+	char	 brightUpLogo[64]	 = "/logos/brightnessdown.bmp";
+	char	 brightDownLogo[64]	 = "/logos/brightnessup.bmp";
+	char	 sleepLogo[64]		 = "/logos/sleep.bmp";
+	char	 infoLogo[64]		 = "/logos/info.bmp";
+	char	 splashscreen[64]	 = "/logos/freetouchdeck_logo.bmp";
 
 	char homeScreenLogos[BUTTON_COUNT][64] = {
 			"music.bmp",

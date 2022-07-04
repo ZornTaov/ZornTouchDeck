@@ -39,18 +39,21 @@ void convertToJson(const ZTDButton &src, JsonVariant dst) {
 	}
 	dst["latch"] = src.latch;
 	dst["latchlogo"] = src.latchlogo;
+	dst["logo"] = src.logo;
 }
 
 void convertFromJson(JsonVariantConst src, ZTDButton &dst) {
 	for (int i = 0; i < ACTION_COUNT; ++i) {
 		dst.actions[i] = src["actions"][i];
 	}
+	strlcpy(dst.logo, src["logo"] | "question.bmp", 64);
 	dst.latch = src["latch"] | false;
 	strlcpy(dst.latchlogo, src["latchlogo"] | "question.bmp", sizeof(dst.latchlogo));
 }
 
 size_t ZTDButton::getJsonSize() {
-	return JSON_STRING_SIZE(32) + JSON_ARRAY_SIZE(ACTION_COUNT) + ZTDAction::getJsonSize() * ACTION_COUNT;
+	size_t logo = JSON_STRING_SIZE(64) + JSON_OBJECT_SIZE(1);
+	return JSON_STRING_SIZE(32) + JSON_ARRAY_SIZE(ACTION_COUNT) + ZTDAction::getJsonSize() * ACTION_COUNT + logo;
 }
 
 //=================================================================
@@ -59,23 +62,19 @@ size_t ZTDButton::getJsonSize() {
 void convertToJson(const ZTDMenu &src, JsonVariant dst) {
 	for (int i = 0; i < BUTTON_COUNT - 1; ++i) {
 		dst["buttons"][i] = src.buttons[i];
-		dst["logos"][i] = src.logos[i];
 	}
 }
 
 void convertFromJson(JsonVariantConst src, ZTDMenu &dst) {
 	for (int i = 0; i < BUTTON_COUNT - 1; ++i) {
 		dst.buttons[i] = src["buttons"][i];
-		strlcpy(dst.logos[i], src["logos"][i] | "question.bmp", 64);
 	}
 }
 
 size_t ZTDMenu::getJsonSize() {
 	size_t buttons = ZTDButton::getJsonSize() * (BUTTON_COUNT - 1);
 	size_t buttonsarray = JSON_ARRAY_SIZE(BUTTON_COUNT - 1);
-	size_t logos = JSON_STRING_SIZE(64) * (BUTTON_COUNT - 1);
-	size_t logosarray = JSON_ARRAY_SIZE(BUTTON_COUNT - 1);
-	return buttons + buttonsarray + logos + logosarray;
+	return buttons + buttonsarray;
 }
 
 //=================================================================
@@ -96,8 +95,11 @@ void convertToJson(const GeneralConfig &src, JsonVariant dst) {
 
 	dst["homebutton"] = src.homebutton;
 	dst["splashscreen"] = src.splashscreen;
-	dst["configurator"] = src.configurator;
-
+	dst["configuratorLogo"] = src.configuratorLogo;
+	dst["brightUpLogo"] = src.brightUpLogo;
+	dst["brightDownLogo"] = src.brightDownLogo;
+	dst["sleepLogo"] = src.sleepLogo;
+	dst["infoLogo"] = src.infoLogo;
 	for (int i = 0; i < BUTTON_COUNT; ++i) {
 		dst["homeScreenLogos"][i] = src.homeScreenLogos[i];
 	}
@@ -118,7 +120,12 @@ void convertFromJson(JsonVariantConst src, GeneralConfig &dst) {
 
 	strcpy(dst.homebutton, src["homebutton"] | "/logos/home.bmp");
 	strcpy(dst.splashscreen, src["splashscreen"] | "/logos/freetouchdeck_logo.bmp");
-	strcpy(dst.configurator, src["configurator"] | "/logos/wifi.bmp");
+	strcpy(dst.configuratorLogo, src["configurator"] | "/logos/wifi.bmp");
+	strcpy(dst.brightUpLogo, src["brightUpLogo"] | "/logos/brightnessdown.bmp");
+	strcpy(dst.brightDownLogo, src["brightDownLogo"] | "/logos/brightnessup.bmp");
+	strcpy(dst.sleepLogo, src["sleepLogo"] | "/logos/sleep.bmp");
+	strcpy(dst.infoLogo, src["infoLogo"] | "/logos/info.bmp");
+
 
 	for (int i = 0; i < BUTTON_COUNT; ++i) {
 		if(src["homeScreenLogos"][i])
@@ -127,7 +134,7 @@ void convertFromJson(JsonVariantConst src, GeneralConfig &dst) {
 }
 
 size_t GeneralConfig::getJsonSize() {
-	return 3 * JSON_STRING_SIZE(64) + JSON_OBJECT_SIZE(14) + JSON_ARRAY_SIZE(BUTTON_COUNT) + JSON_STRING_SIZE(64) * (BUTTON_COUNT);
+	return 7 * JSON_STRING_SIZE(64) + JSON_OBJECT_SIZE(18) + JSON_ARRAY_SIZE(BUTTON_COUNT) + JSON_STRING_SIZE(64) * (BUTTON_COUNT);
 }
 
 size_t Wificonfig::getJsonSize() {

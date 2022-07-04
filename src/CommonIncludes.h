@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 #define FOLD(name) 1
+
 #if FOLD(includes)
 
 #include <SPIFFS.h>
@@ -48,13 +49,14 @@
 
 #include <AsyncTCP.h>          //Async Webserver support header
 #include <ESPAsyncWebServer.h> //Async Webserver support header
-
+//#include "BluetoothSerial.h"
+#include "pthread.h"
 #include <ESPmDNS.h> // DNS functionality
 #endif //includes
 
 // Set the number of colomns and rows of your buttons here:
-#define BTN_COLS 3
-#define BTN_ROWS 2
+#define BTN_COLS 5
+#define BTN_ROWS 3
 
 #define ACTION_COUNT 3
 
@@ -70,6 +72,9 @@
 #warning Need more than one button to function!
 #endif
 
+#if BUTTON_COUNT > 100
+#warning How and WHY do you have so many buttons! This breaks saving button latches!
+#endif
 // Keypad start position, centre of the first button
 #define KEY_X SCREEN_WIDTH / (BTN_COLS * 2)
 #define KEY_Y SCREEN_HEIGHT / (BTN_ROWS * 2)
@@ -81,6 +86,21 @@
 // Width and height of a button
 #define KEY_W (SCREEN_WIDTH / BTN_COLS) - KEY_SPACING_X
 #define KEY_H (SCREEN_HEIGHT / BTN_ROWS) - KEY_SPACING_Y
+
+// Set the number of colomns and rows of settings buttons here:
+#define S_BTN_COLS 3
+#define S_BTN_ROWS 2
+// Settings Keypad start position, centre of the first button
+#define S_KEY_X SCREEN_WIDTH / (S_BTN_COLS * 2)
+#define S_KEY_Y SCREEN_HEIGHT / (S_BTN_ROWS * 2)
+
+// Gaps between settings buttons
+#define S_KEY_SPACING_X SCREEN_WIDTH / (S_BTN_COLS * 8)
+#define S_KEY_SPACING_Y SCREEN_HEIGHT / (S_BTN_ROWS * 8)
+
+// Width and height of a settings button
+#define S_KEY_W (SCREEN_WIDTH / S_BTN_COLS) - S_KEY_SPACING_X
+#define S_KEY_H (SCREEN_HEIGHT / S_BTN_ROWS) - S_KEY_SPACING_Y
 
 // Font size multiplier
 #define KEY_TEXTSIZE 1
@@ -94,5 +114,14 @@
 #define FILESYSTEM SPIFFS
 #define CALIBRATION_FILE "/TouchCalData"
 #define REPEAT_CAL false
+
+enum MenuState : uint8_t {
+	HOME,
+	SETTINGS,
+	ACTION,
+	ERROR,
+	OTHER
+};
+
 #endif //generalDefines
 extern HardwareSerial Serial; // @suppress("Abstract class cannot be instantiated")

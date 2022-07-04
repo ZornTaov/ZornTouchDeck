@@ -108,8 +108,6 @@ void userAction7(){
 
 }
 
-
-
 /* A simple function to print large strings using Configuration::getBleKeyboard()-> The function has a delay
  * between keypresses to not miss any, or hang on 1.
 */

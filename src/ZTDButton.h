@@ -16,7 +16,8 @@ class ZTDButton {
 public:
 	ZTDAction actions[ACTION_COUNT];
 	bool latch;
-	char latchlogo[32];
+	char logo[32] = "question.bmp";
+	char latchlogo[32] = "";
 	static size_t getJsonSize();
 	friend void convertToJson(const ZTDButton &src, JsonVariant dst);
 	friend void convertFromJson(JsonVariantConst src, ZTDButton& dst);
