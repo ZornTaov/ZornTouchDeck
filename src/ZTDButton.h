@@ -14,13 +14,15 @@ namespace ZTD {
 
 class ZTDButton {
 public:
+	char logo[64] = "question.bmp";
 	ZTDAction actions[ACTION_COUNT];
-	bool latch;
-	char logo[32] = "question.bmp";
-	char latchlogo[32] = "";
+	bool latch = false;
+	bool hasLatch = false;
+	char latchlogo[64] = "";
 	static size_t getJsonSize();
 	friend void convertToJson(const ZTDButton &src, JsonVariant dst);
 	friend void convertFromJson(JsonVariantConst src, ZTDButton& dst);
+	void doButtonAction();
 };
 
 } /* namespace ZTD */

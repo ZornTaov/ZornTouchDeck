@@ -398,6 +398,7 @@ void KeyboardHelper::sendUserAction(int value) {
 void KeyboardHelper::bleKeyboardAction(int action, int value, char *symbol) {
 
 	Serial.println("[INFO]: BLE Keyboard action received");
+	Serialprintln("A:%d, V:%d, S:%s", action, value, symbol);
 
 	switch (action) {
 	case 0:

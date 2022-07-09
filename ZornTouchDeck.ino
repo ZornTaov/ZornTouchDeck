@@ -115,8 +115,8 @@ void setup() {
 // ----------------- Calibrate Touch --------------------
 #ifndef USECAPTOUCH
 	Serial.println("[INFO]: Waiting for touch calibration...");
-	//TODO touch calibrate
-	//touch_calibrate();
+
+	Configuration::instance()->touch_calibrate();
 	Serial.println("[INFO]: Touch calibration completed!");
 #endif // USECAPTOUCH
 
@@ -347,9 +347,17 @@ void loop() {
 	// Touch coordinates are stored here
 	uint16_t t_x = 0, t_y = 0;
 	bool pressed = getPressed(&t_x, &t_y);
-
+	uint8_t btnCount = BUTTON_COUNT;
+	uint8_t rows = BTN_ROWS;
+	uint8_t cols = BTN_COLS;
+	if(Configuration::getMenuState() == SETTINGS)
+	{
+		btnCount = 6;
+		rows = S_BTN_ROWS;
+		cols = S_BTN_COLS;
+	}
 	// Check if the X and Y coordinates of the touch are within one of our buttons
-	for (uint8_t b = 0; b < BUTTON_COUNT; b++) {
+	for (uint8_t b = 0; b < btnCount; b++) {
 		if (pressed && Screen::instance()->getKey(b)->contains(t_x, t_y)) {
 			Screen::instance()->getKey(b)->press(true); // tell the button it is pressed
 
@@ -360,15 +368,16 @@ void loop() {
 		}
 	}
 
-	for (uint8_t row = 0; row < BTN_ROWS; row++) {
-		for (uint8_t col = 0; col < BTN_COLS; col++) {
-			uint8_t b = col + row * BTN_COLS;
+	for (uint8_t row = 0; row < rows; row++) {
+		for (uint8_t col = 0; col < cols; col++) {
+			uint8_t b = col + row * cols;
 			if (Screen::instance()->getKey(b)->justReleased()) {
 				//TODO re-draw logo when released
-				Screen::instance()->drawBasicButton(col, row, TFT_WHITE);
+				Screen::instance()->drawButton(col, row);
 			}
 			if (Screen::instance()->getKey(b)->justPressed()) {
 				//TODO do keypad action
+
 				// Beep
 				#ifdef speakerPin
 				if(generalconfig.beep){
@@ -381,6 +390,8 @@ void loop() {
 				#endif
 				//set button to white for "pressed" state
 				Screen::instance()->drawBasicButton(col, row, TFT_WHITE);
+
+				ZTDMenu::doButton(b);
 			}
 		}
 	}

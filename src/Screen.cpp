@@ -23,18 +23,26 @@ void Screen::drawErrorMessage(String message) {
 TFT_eSPI* Screen::getTFT() {
 	return &Screen::instance()->tft;
 }
-void Screen::drawlatched(int b, int col, int row) {
+void Screen::drawlatch(int b, int col, int row) {
+
+	uint8_t kx = KEY_X, kw = KEY_W, ksx = KEY_SPACING_X;
+	uint8_t ky = KEY_Y, kh = KEY_H, ksy = KEY_SPACING_Y;
+	if(Configuration::getMenuState() == SETTINGS)
+	{
+		kx = S_KEY_X; kw = S_KEY_W; ksx = S_KEY_SPACING_X;
+		ky = S_KEY_Y; kh = S_KEY_H; ksy = S_KEY_SPACING_Y;
+	}
 	int offset;
 	if (SCREEN_WIDTH < 480) {
 		offset = 2;
 	} else {
 		offset = 12;
 	}
-	tft.fillRoundRect((KEY_X - 37 + col * (KEY_W + KEY_SPACING_X)) - offset,
-			(KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y)) - offset, 18, 18, 4,
+	tft.fillRoundRect((kx - 37 + col * (kw + ksx)) - offset,
+			(ky - 37 + row * (kh + ksy)) - offset, 18, 18, 4,
 			Configuration::instance()->getGConf()->latchedColor);
 }
-void Screen::drawlogo(int logonumber, int col, int row, bool transparent,
+void Screen::drawlogo(int index, int col, int row, bool transparent,
 		bool latch) {
 	int16_t posX = KEY_X - 36 + col * (KEY_W + KEY_SPACING_X);
 	int16_t posY = KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y);
@@ -45,7 +53,11 @@ void Screen::drawlogo(int logonumber, int col, int row, bool transparent,
 
 	switch (Configuration::getMenuState()) {
 	case HOME: {
-		subPath = Configuration::getHomeLogos()[logonumber].logo;
+		if (index == BUTTON_COUNT - 1){
+			subPath = "settings.bmp";
+		} else {
+			subPath = Configuration::getHomeLogos()[index].logo;
+		}
 		cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
 		//Draw Home screen logo's
 		drawBmp(bufferPath, posX, posY, transparent);
@@ -55,27 +67,27 @@ void Screen::drawlogo(int logonumber, int col, int row, bool transparent,
 
 		uint8_t currentMenuIndex = Configuration::getMenuIndex();
 		ZTDMenu *currentMenu = &Configuration::getMenus()[currentMenuIndex];
-		bool isHome = logonumber == BUTTON_COUNT - 1;
-		ZTDButton *button = isHome ? Configuration::getHomeButton() : &currentMenu->buttons[logonumber];
-		if (logonumber == 0) {
-			if (latch == true) {
-				if (strcmp(button->latchlogo, "") != 0) {
-					subPath = button->latchlogo;
-					cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
-					drawBmp(bufferPath, posX, posY, transparent);
-				} else {
-					subPath = button->logo;
-					cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
-					drawBmp(bufferPath, posX, posY, transparent);
-					drawlatched(logonumber, col, row);
-				}
+		bool isHome = index == BUTTON_COUNT - 1;
+		ZTDButton *button = isHome ? Configuration::getHomeButton() : &currentMenu->buttons[index];
+
+//		if (index == 5) {
+//			subPath = Configuration::getHomeButton()->logo;
+//			cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
+//			drawBmp(bufferPath, posX, posY, transparent);
+//		}
+		if (latch == true) {
+			if (strcmp(button->latchlogo, "") != 0) {
+				subPath = button->latchlogo;
+				cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
+				drawBmp(bufferPath, posX, posY, transparent);
 			} else {
 				subPath = button->logo;
 				cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
 				drawBmp(bufferPath, posX, posY, transparent);
+				drawlatch(index, col, row);
 			}
-		} else if (logonumber == 5) {
-			subPath = Configuration::getHomeButton()->logo;
+		} else {
+			subPath = button->logo;
 			cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
 			drawBmp(bufferPath, posX, posY, transparent);
 		}
@@ -85,14 +97,16 @@ void Screen::drawlogo(int logonumber, int col, int row, bool transparent,
 		posX = S_KEY_X - 36 + col * (S_KEY_W + S_KEY_SPACING_X);
 		posY = S_KEY_Y - 36 + row * (S_KEY_H + S_KEY_SPACING_Y);
 		// pageNum6 contains settings logos
-		if (logonumber == 5) {
-			drawBmp(Configuration::getHomeButton()->logo,
-					posX, posY, transparent);
+		if (index == 5) {
+			subPath = Configuration::getHomeButton()->logo;
+			cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
+			drawBmp(bufferPath, posX, posY, transparent);
 		} else {
-			drawBmp(Configuration::getSettingsLogos()[logonumber].logo,
-					posX, posY, true);
+			subPath = Configuration::getGConf()->settingsLogos[index];
+			cwk_path_join(Configuration::getLogoPath(), subPath, bufferPath, sizeof(bufferPath));
+			drawBmp(bufferPath, posX, posY, true);
 			if (latch) {
-				drawlatched(logonumber, col, row);
+				drawlatch(index, col, row);
 			}
 		}
 		break;
@@ -100,23 +114,20 @@ void Screen::drawlogo(int logonumber, int col, int row, bool transparent,
 	}
 }
 
-void Screen::drawHome() {
+void Screen::drawSettingsScreen() {
+	// Draw the home screen button outlines and fill them with colours
+	for (uint8_t row = 0; row < S_BTN_ROWS; row++) {
+		for (uint8_t col = 0; col < S_BTN_COLS; col++) {
+			drawSettingsButton(col, row);
+		}
+	}
+}
+
+void Screen::drawHomeScreen() {
 	// Draw the home screen button outlines and fill them with colours
 	for (uint8_t row = 0; row < BTN_ROWS; row++) {
 		for (uint8_t col = 0; col < BTN_COLS; col++) {
-			uint8_t b = col + row * BTN_COLS;
-			uint16_t buttonBG;
-			bool drawTransparent;
-			uint16_t imageBGColor = getImageBG(b);
-			if (imageBGColor > 0) {
-				buttonBG = imageBGColor;
-				drawTransparent = false;
-			} else {
-				buttonBG =
-						Configuration::instance()->getGConf()->menuButtonColor;
-				drawTransparent = true;
-			}
-			drawButton(col, row, buttonBG, true, drawTransparent, false);
+			drawHomeScreenButton(col, row);
 		}
 	}
 }
@@ -137,14 +148,15 @@ void Screen::drawErrorScreen() {
 }
 
 void Screen::drawKeypad() {
+	Screen::getTFT()->fillScreen(TFT_BLACK);
 
 	switch (Configuration::getMenuState()) {
 	case HOME:
 		// Draw the home screen button outlines and fill them with colours
-		drawHome();
+		drawHomeScreen();
 		return;
 	case SETTINGS:
-		//drawSettings();
+		drawSettingsScreen();
 		return;
 	case ERROR:
 		// Pagenum 10 means that a JSON config failed to load completely.
@@ -159,55 +171,43 @@ void Screen::drawKeypad() {
 	// Draw the button outlines and fill them with colours
 	for (uint8_t row = 0; row < BTN_ROWS; row++) {
 		for (uint8_t col = 0; col < BTN_COLS; col++) {
-
-			uint8_t b = col + row * BTN_COLS;
-			bool isHome = b == BUTTON_COUNT - 1;
-			ZTDButton *button =
-					isHome ?
-							Configuration::getHomeButton() :
-							&currentMenu->buttons[b];
-			// Check if "home.bmp" is a transparent one
-
-			uint16_t buttonBG;
-			bool drawTransparent;
-			uint16_t imageBGColor;
-
-			bool hasLatch = !isHome && button->latch && b < BUTTON_COUNT - 1;
-			if (hasLatch) {
-				imageBGColor = getLatchImageBG(b);
-			} else {
-				imageBGColor = getImageBG(b);
-			}
-
-			if (imageBGColor > 0) {
-				buttonBG = imageBGColor;
-				drawTransparent = false;
-			} else {
-				//TODO implement color per button?
-				buttonBG = isHome ?
-								Configuration::instance()->getGConf()->menuButtonColor :
-								Configuration::instance()->getGConf()->functionButtonColor;
-				drawTransparent = true;
-			}
-
-			drawButton(col, row, buttonBG, true, drawTransparent, hasLatch);
+			drawMenuButton(col, row, currentMenu);
 		}
 	}
 }
 
-void Screen::drawButton(uint8_t col, uint8_t row, uint16_t buttonBG, bool drawLogo, bool drawTransparent, bool hasLatch) {
-	uint8_t b = col + row * BTN_COLS;
+void Screen::drawLogoButton(uint8_t col, uint8_t row, uint16_t buttonBG, bool drawTransparent, bool hasLatch) {
+
+	uint8_t cols = BTN_COLS;
+	if(Configuration::getMenuState() == SETTINGS)
+		cols = S_BTN_COLS;
+	uint8_t b = col + row * cols;
 	drawBasicButton(col, row, buttonBG);
-	if(drawLogo) drawlogo(b, col, row, drawTransparent, hasLatch);
+	drawlogo(b, col, row, drawTransparent, hasLatch);
 }
 
 void Screen::drawBasicButton(uint8_t col, uint8_t row, uint16_t buttonBG) {
-	uint8_t b = col + row * BTN_COLS;
+	uint8_t btnCount = BUTTON_COUNT;
+	uint8_t rows = BTN_ROWS;
+	uint8_t cols = BTN_COLS;
+
+	uint8_t kx = KEY_X, kw = KEY_W, ksx = KEY_SPACING_X;
+	uint8_t ky = KEY_Y, kh = KEY_H, ksy = KEY_SPACING_Y;
+	if(Configuration::getMenuState() == SETTINGS)
+	{
+		btnCount = 6;
+		rows = S_BTN_ROWS;
+		cols = S_BTN_COLS;
+
+		kx = S_KEY_X; kw = S_KEY_W; ksx = S_KEY_SPACING_X;
+		ky = S_KEY_Y; kh = S_KEY_H; ksy = S_KEY_SPACING_Y;
+	}
+	uint8_t b = col + row * cols;
 	tft.setFreeFont(LABEL_FONT);
 	keys[b].initButton(&tft,
-		KEY_X + col * (KEY_W + KEY_SPACING_X),
-		KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-		KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE, "",
+			kx + col * (kw + ksx),
+			ky + row * (kh + ksy), // x, y, w, h, outline, fill, text
+			kw, kh, TFT_WHITE, buttonBG, TFT_WHITE, "",
 		KEY_TEXTSIZE);
 	keys[b].drawButton();
 }
@@ -443,7 +443,7 @@ uint16_t Screen::getImageBG(int logonumber) {
 		break;
 	case SETTINGS:
 		if (logonumber < 5) {
-			subPath = Configuration::getHomeLogos()[logonumber].logo;
+			subPath = Configuration::getGConf()->settingsLogos[logonumber];
 		} else if (logonumber == 5) {
 			subPath = Configuration::getHomeButton()->logo;
 		} else {
@@ -549,6 +549,99 @@ TFT_eSPI_Button* Screen::getKeys() {
 
 TFT_eSPI_Button* Screen::getKey(uint8_t index) {
 	return &keys[index];
+}
+
+void Screen::drawHomeButton(uint8_t col, uint8_t row) {
+
+}
+
+void Screen::drawHomeScreenButton(uint8_t col, uint8_t row) {
+	uint8_t b = col + row * BTN_COLS;
+	uint16_t buttonBG;
+	bool drawTransparent;
+	uint16_t imageBGColor = getImageBG(b);
+	if (imageBGColor > 0) {
+		buttonBG = imageBGColor;
+		drawTransparent = false;
+	} else {
+		buttonBG =
+				Configuration::instance()->getGConf()->menuButtonColor;
+		drawTransparent = true;
+	}
+	drawLogoButton(col, row, buttonBG, drawTransparent, false);
+}
+
+void Screen::drawSettingsButton(uint8_t col, uint8_t row) {
+	uint8_t b = col + row * S_BTN_COLS;
+	uint16_t buttonBG;
+	bool drawTransparent;
+	uint16_t imageBGColor = getImageBG(b);
+	if (imageBGColor > 0) {
+		buttonBG = imageBGColor;
+		drawTransparent = false;
+	} else {
+		buttonBG = Configuration::instance()->getGConf()->menuButtonColor;
+		drawTransparent = true;
+	}
+	drawLogoButton(col, row, buttonBG, drawTransparent, false);
+}
+
+void Screen::drawMenuButton(uint8_t col, uint8_t row, ZTDMenu *currentMenu) {
+
+	uint8_t b = col + row * BTN_COLS;
+	bool isHome = b == BUTTON_COUNT - 1;
+	ZTDButton *button =
+			isHome ?
+					Configuration::getHomeButton() :
+					&currentMenu->buttons[b];
+	// Check if "home.bmp" is a transparent one
+
+	uint16_t buttonBG;
+	bool drawTransparent;
+	uint16_t imageBGColor;
+
+	bool hasLatch = !isHome && button->latch && b < BUTTON_COUNT - 1;
+	if (hasLatch) {
+		imageBGColor = getLatchImageBG(b);
+	} else {
+		imageBGColor = getImageBG(b);
+	}
+
+	if (imageBGColor > 0) {
+		buttonBG = imageBGColor;
+		drawTransparent = false;
+	} else {
+		//TODO implement color per button?
+		buttonBG = isHome ?
+						Configuration::instance()->getGConf()->menuButtonColor :
+						Configuration::instance()->getGConf()->functionButtonColor;
+		drawTransparent = true;
+	}
+
+	drawLogoButton(col, row, buttonBG, drawTransparent, hasLatch);
+}
+
+void Screen::drawButton(uint8_t col, uint8_t row) {
+
+	switch (Configuration::getMenuState()) {
+	case HOME:
+		// Draw the home screen button outlines and fill them with colours
+		drawHomeScreenButton(col, row);
+		return;
+	case SETTINGS:
+		drawSettingsButton(col, row);
+		return;
+	case ERROR:
+		// Pagenum 10 means that a JSON config failed to load completely.
+		drawErrorScreen();
+		return;
+	default:
+		// isn't a special menu, draw current menu buttons
+		uint8_t currentMenuIndex = Configuration::getMenuIndex();
+		ZTDMenu *currentMenu = &Configuration::getMenus()[currentMenuIndex];
+		drawMenuButton(col, row, currentMenu);
+		break;
+	}
 }
 
 } /* namespace ZTD */

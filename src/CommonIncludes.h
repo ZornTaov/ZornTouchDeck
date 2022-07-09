@@ -119,6 +119,8 @@ enum MenuState : uint8_t {
 	HOME,
 	SETTINGS,
 	ACTION,
+	WIFI,
+	INFO,
 	ERROR,
 	OTHER
 };

@@ -16,7 +16,9 @@ namespace ZTD {
 
 class Configuration {
 
-	Configuration(){}// @suppress("Class members should be properly initialized")
+	Configuration(){
+		strlcpy(homeButton->logo, generalConfig->homebutton, sizeof(homeButton->logo));
+	}// @suppress("Class members should be properly initialized")
 
 #ifdef USEUSBHID
 	static USBHIDKeyboard* bleKeyboard;
@@ -36,7 +38,7 @@ class Configuration {
 	static GeneralConfig* generalConfig;
 
 	//path to the directory the logo are in ! including leading AND trailing / !
-	static constexpr char* logopath = "/logos/";
+	static const char* logopath;
 public:
 	Configuration(Configuration const&) = delete;
 	Configuration& operator=(Configuration const&) = delete;
@@ -57,12 +59,12 @@ public:
 	static ZTDButton* getHomeButton();
 	static ZTDMenu* getMenus();
 	static uint8_t getMenuIndex();
-	void setMenuIndex(uint8_t menuIndex);
+	static void setMenuIndex(uint8_t menuIndex);
 	static MenuState getMenuState();
-	void setMenuState(MenuState menuState = HOME);
+	static void setMenuState(MenuState menuState = HOME);
 	static GeneralConfig* getGConf();
 	static void setGConf(GeneralConfig *generalConfig);
-	static char* getLogoPath();
+	static const  char* getLogoPath();
 
 	static Preferences* savedStates;
 
@@ -76,6 +78,9 @@ public:
 
 	// templogopath is used to hold the complete path of an image. It is empty for now.
 	char templogopath[64] = "";
+#ifndef USECAPTOUCH
+	void touch_calibrate();
+#endif //!defined(USECAPTOUCH)
 
 };
 

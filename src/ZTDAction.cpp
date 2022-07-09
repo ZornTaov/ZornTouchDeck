@@ -6,7 +6,12 @@
  */
 
 #include "ZTDAction.h"
+#include "KeyboardHelper.h"
 
 namespace ZTD {
+
+void ZTDAction::bleKeyboardAction() {
+	KeyboardHelper::bleKeyboardAction(action, value, symbol);
+}
 
 } /* namespace ZTD */

@@ -18,6 +18,7 @@ class ZTDMenu {
 		static size_t getJsonSize();
 		friend void convertToJson(const ZTDMenu &src, JsonVariant dst);
 		friend void convertFromJson(JsonVariantConst src, ZTDMenu& dst);
+		static void doButton(uint8_t index);
 	};
 
 } /* namespace ZTD */

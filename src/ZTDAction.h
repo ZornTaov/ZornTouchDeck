@@ -19,6 +19,7 @@ class ZTDAction {
 		static size_t getJsonSize();
 		friend void convertToJson(const ZTDAction &src, JsonVariant dst);
 		friend void convertFromJson(JsonVariantConst src, ZTDAction& dst);
+		void bleKeyboardAction();
 	};
 
 } /* namespace ZTD */

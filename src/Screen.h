@@ -8,15 +8,16 @@
 #pragma once
 #include "CommonIncludes.h"
 #include "ZTDJsonConvert.h"
+#include "ZTDMenu.h"
 
 namespace ZTD {
 
 class Screen {
 	Screen() {}
 
-	void drawHome();
+	void drawHomeScreen();
 	void drawErrorScreen();
-
+	void drawSettingsScreen();
 	TFT_eSPI tft = TFT_eSPI(); // @suppress("Abstract class cannot be instantiated")
 	// Invoke the TFT_eSPI button class and create all the button objects
 	TFT_eSPI_Button keys[BUTTON_COUNT]; // @suppress("Abstract class cannot be instantiated")
@@ -38,11 +39,16 @@ public:
 	int ledBrightness = 255;
 
 	void drawErrorMessage(String message);
-	void drawlatched(int b, int col, int row);
+	void drawlatch(int b, int col, int row);
 	void drawlogo(int logonumber, int col, int row, bool transparent, bool latch);
 	void drawKeypad();
+	void drawButton(uint8_t col, uint8_t row);
 	void drawBasicButton(uint8_t col, uint8_t row, uint16_t buttonBG);
-	void drawButton(uint8_t col, uint8_t row, uint16_t buttonBG, bool drawLogo, bool drawTransparent, bool hasLatch);
+	void drawLogoButton(uint8_t col, uint8_t row, uint16_t buttonBG, bool drawTransparent, bool hasLatch);
+	void drawHomeButton(uint8_t col, uint8_t row);
+	void drawHomeScreenButton(uint8_t col, uint8_t row);
+	void drawSettingsButton(uint8_t col, uint8_t row);
+	void drawMenuButton(uint8_t col, uint8_t row, ZTDMenu *currentMenu);
 	uint16_t read16(fs::File &f);
 	uint32_t read32(fs::File &f);
 	unsigned long convertHTMLtoRGB888(char *html);

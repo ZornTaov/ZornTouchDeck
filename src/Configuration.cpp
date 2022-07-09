@@ -27,7 +27,7 @@ ZTDButton Configuration::settings[6] = {};
 ZTDMenu Configuration::menus[BUTTON_COUNT-1] = {};
 Preferences* Configuration::savedStates = new Preferences();
 Wificonfig* Configuration::wifiConfig = new Wificonfig();
-//char* Configuration::logopath
+const char* Configuration::logopath = "/logos/";
 
 void Configuration::configmode() {
 
@@ -89,6 +89,89 @@ bool Configuration::checkfile(const char *filename) {
 	}
 }
 
+/**
+* @brief This function presents the user with 4 points to touch and saves
+         that data to a claibration file.
+*
+* @param none
+*
+* @return none
+*
+* @note If USECAPTOUCH is defined we do not need to calibrate touch
+*/
+
+#ifndef USECAPTOUCH
+void Configuration::touch_calibrate()
+{
+  uint16_t calData[5];
+  uint8_t calDataOK = 0;
+
+  // check if calibration file exists and size is correct
+  if (FILESYSTEM.exists(CALIBRATION_FILE))
+  {
+    if (REPEAT_CAL)
+    {
+      // Delete if we want to re-calibrate
+      FILESYSTEM.remove(CALIBRATION_FILE);
+    }
+    else
+    {
+      File f = FILESYSTEM.open(CALIBRATION_FILE, "r");
+      if (f)
+      {
+        if (f.readBytes((char *)calData, 10) == 10)
+          calDataOK = 1;
+        f.close();
+      }
+    }
+  }
+
+  if (calDataOK && !REPEAT_CAL)
+  {
+    // calibration data valid
+	  Screen::getTFT()->setTouch(calData);
+		for (uint8_t i = 0; i < 5; i++) {
+			Serial.print(calData[i], HEX);
+			Serial.print(", ");
+		}
+		Serial.println();
+  }
+  else
+  {
+    // data not valid so recalibrate
+	  Screen::getTFT()->fillScreen(TFT_BLACK);
+	  Screen::getTFT()->setCursor(20, 0);
+	  Screen::getTFT()->setTextFont(2);
+	  Screen::getTFT()->setTextSize(1);
+	  Screen::getTFT()->setTextColor(TFT_WHITE, TFT_BLACK);
+
+	  Screen::getTFT()->println("Touch corners as indicated");
+
+	  Screen::getTFT()->setTextFont(1);
+	  Screen::getTFT()->println();
+
+    if (REPEAT_CAL)
+    {
+    	Screen::getTFT()->setTextColor(TFT_RED, TFT_BLACK);
+    	Screen::getTFT()->println("Set REPEAT_CAL to false to stop this running again!");
+    }
+
+    Screen::getTFT()->calibrateTouch(calData, TFT_MAGENTA, TFT_BLACK, 15);
+
+    Screen::getTFT()->setTextColor(TFT_GREEN, TFT_BLACK);
+    Screen::getTFT()->println("Calibration complete!");
+
+    // store data
+    File f = FILESYSTEM.open(CALIBRATION_FILE, "w");
+    if (f)
+    {
+      f.write((const unsigned char *)calData, 10);
+      f.close();
+    }
+  }
+}
+#endif //!defined(USECAPTOUCH)
+
 BleKeyboard* Configuration::getBleKeyboard() {
 	return bleKeyboard;
 }
@@ -109,16 +192,18 @@ uint8_t Configuration::getMenuIndex() {
 	return menuIndex;
 }
 
-void Configuration::setMenuIndex(uint8_t menuIndex) {
-	this->menuIndex = menuIndex;
+void Configuration::setMenuIndex(uint8_t menuindex) {
+	Serialprintln("MenuIndex O:%d N:%d", menuIndex, menuindex);
+	menuIndex = menuindex;
 }
 
 MenuState Configuration::getMenuState() {
 	return menuState;
 }
 
-void Configuration::setMenuState(MenuState menuState) {
-	this->menuState = menuState;
+void Configuration::setMenuState(MenuState menustate) {
+	Serialprintln("MenuState O:%d N:%d", menuState, menustate);
+	menuState = menustate;
 }
 
 GeneralConfig* Configuration::getGConf() {
@@ -138,7 +223,7 @@ ZTDButton* Configuration::getSettingsLogos() {
 	return settings;
 }
 
-char* Configuration::getLogoPath() {
+const char* Configuration::getLogoPath() {
 	return Configuration::logopath;
 }
 
