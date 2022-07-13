@@ -11,7 +11,7 @@ namespace ZTD {
 
 GeneralConfig::GeneralConfig() {
 
-	settingsLogos[0] = configuratorLogo;
+	settingsLogos[0] = wifiLogo;
 	settingsLogos[1] = brightDownLogo;
 	settingsLogos[2] = brightUpLogo;
 	settingsLogos[3] = sleepLogo;

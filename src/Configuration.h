@@ -16,9 +16,12 @@ namespace ZTD {
 
 class Configuration {
 
-	Configuration(){
+	Configuration(){// @suppress("Class members should be properly initialized")
 		strlcpy(homeButton->logo, generalConfig->homebutton, sizeof(homeButton->logo));
-	}// @suppress("Class members should be properly initialized")
+
+		settings[3].hasLatch = true;
+		settings[3].latch = generalConfig->sleepEnable;
+	}
 
 #ifdef USEUSBHID
 	static USBHIDKeyboard* bleKeyboard;
@@ -57,6 +60,7 @@ public:
 	static ZTDButton* getHomeLogos();
 	static ZTDButton* getSettingsLogos();
 	static ZTDButton* getHomeButton();
+	static ZTDButton* getSettingsMenu();
 	static ZTDMenu* getMenus();
 	static uint8_t getMenuIndex();
 	static void setMenuIndex(uint8_t menuIndex);

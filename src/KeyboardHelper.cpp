@@ -304,12 +304,14 @@ void KeyboardHelper::specialFunction(int value) {
 		if (Configuration::instance()->getGConf()->sleepEnable) {
 			Configuration::instance()->getGConf()->sleepEnable = false;
 			Serial.println("[INFO]: Sleep disabled.");
+			Configuration::instance()->getSettingsMenu()[3].latch = false;
 		} else {
 			Configuration::instance()->getGConf()->sleepEnable = true;
 			Configuration::instance()->Interval = Configuration::instance()->getGConf()->sleepTimer * 60000;
 			Serial.println("[INFO]: Sleep enabled.");
 			Serial.print("[INFO]: Timer set to: ");
 			Serial.println(Configuration::instance()->getGConf()->sleepTimer);
+			Configuration::instance()->getSettingsMenu()[3].latch = true;
 		}
 		break;
 #endif

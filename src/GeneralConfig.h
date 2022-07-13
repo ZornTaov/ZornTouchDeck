@@ -25,13 +25,13 @@ public:
 	uint8_t  modifier3			 = 0;
 	uint16_t helperDelay		 = 500;
 
-	char	 homebutton[64]		 = "home.bmp";
-	char	 configuratorLogo[64]	 = "wifi.bmp";
-	char	 brightDownLogo[64]	 = "brightnessdown.bmp";
-	char	 brightUpLogo[64]	 = "brightnessup.bmp";
-	char	 sleepLogo[64]		 = "sleep.bmp";
-	char	 infoLogo[64]		 = "info.bmp";
-	char	 splashscreen[64]	 = "freetouchdeck_logo.bmp";
+	char homebutton[64]		 = "home.bmp";
+	char wifiLogo[64]		 = "wifi.bmp";
+	char brightDownLogo[64]	 = "brightnessdown.bmp";
+	char brightUpLogo[64]	 = "brightnessup.bmp";
+	char sleepLogo[64]		 = "sleep.bmp";
+	char infoLogo[64]		 = "info.bmp";
+	char splashscreen[64]	 = "freetouchdeck_logo.bmp";
 	char* settingsLogos[6];
 	char homeScreenLogos[BUTTON_COUNT][64] = {
 			"music.bmp",

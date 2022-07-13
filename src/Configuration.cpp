@@ -227,4 +227,8 @@ const char* Configuration::getLogoPath() {
 	return Configuration::logopath;
 }
 
+ZTDButton* Configuration::getSettingsMenu() {
+	return Configuration::settings;
+}
+
 } /* namespace ZTD */

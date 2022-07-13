@@ -42,14 +42,6 @@ void ZTDMenu::doButton(uint8_t index) {
 		case 3:
 			// sleep toggle
 			KeyboardHelper::bleKeyboardAction(11, 4, 0);
-//			if (islatched[28])
-//			{
-//			  islatched[28] = 0;
-//			}
-//			else
-//			{
-//			  islatched[28] = 1;
-//			}
 			break;
 		case 4:
 			//info

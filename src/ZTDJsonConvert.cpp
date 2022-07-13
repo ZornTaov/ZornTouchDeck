@@ -95,7 +95,7 @@ void convertToJson(const GeneralConfig &src, JsonVariant dst) {
 
 	dst["homebutton"] = src.homebutton;
 	dst["splashscreen"] = src.splashscreen;
-	dst["configuratorLogo"] = src.configuratorLogo;
+	dst["configuratorLogo"] = src.wifiLogo;
 	dst["brightUpLogo"] = src.brightUpLogo;
 	dst["brightDownLogo"] = src.brightDownLogo;
 	dst["sleepLogo"] = src.sleepLogo;
@@ -120,7 +120,7 @@ void convertFromJson(JsonVariantConst src, GeneralConfig &dst) {
 
 	strcpy(dst.homebutton, src["homebutton"] | "/logos/home.bmp");
 	strcpy(dst.splashscreen, src["splashscreen"] | "/logos/freetouchdeck_logo.bmp");
-	strcpy(dst.configuratorLogo, src["configurator"] | "/logos/wifi.bmp");
+	strcpy(dst.wifiLogo, src["configurator"] | "/logos/wifi.bmp");
 	strcpy(dst.brightUpLogo, src["brightUpLogo"] | "/logos/brightnessdown.bmp");
 	strcpy(dst.brightDownLogo, src["brightDownLogo"] | "/logos/brightnessup.bmp");
 	strcpy(dst.sleepLogo, src["sleepLogo"] | "/logos/sleep.bmp");

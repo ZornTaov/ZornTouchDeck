@@ -24,7 +24,7 @@ TFT_eSPI* Screen::getTFT() {
 	return &Screen::instance()->tft;
 }
 void Screen::drawlatch(int b, int col, int row) {
-
+Serial.println("drew latch");
 	uint8_t kx = KEY_X, kw = KEY_W, ksx = KEY_SPACING_X;
 	uint8_t ky = KEY_Y, kh = KEY_H, ksy = KEY_SPACING_Y;
 	if(Configuration::getMenuState() == SETTINGS)
@@ -583,7 +583,8 @@ void Screen::drawSettingsButton(uint8_t col, uint8_t row) {
 		buttonBG = Configuration::instance()->getGConf()->menuButtonColor;
 		drawTransparent = true;
 	}
-	drawLogoButton(col, row, buttonBG, drawTransparent, false);
+	ZTDButton* button = &Configuration::getSettingsMenu()[b];
+	drawLogoButton(col, row, buttonBG, drawTransparent, button->latch);
 }
 
 void Screen::drawMenuButton(uint8_t col, uint8_t row, ZTDMenu *currentMenu) {
