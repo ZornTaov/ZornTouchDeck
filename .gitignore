@@ -53,3 +53,4 @@ local.properties
 .apt_generated_test/
 
 spec.d
+Doxy/
