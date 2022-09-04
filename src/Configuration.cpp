@@ -7,6 +7,7 @@
 
 #include "Configuration.h"
 #include "Screen.h"
+#include "WifiSetup.h"
 namespace ZTD {
 
 #ifdef USEUSBHID
@@ -26,21 +27,27 @@ ZTDButton Configuration::home[BUTTON_COUNT] = {};
 ZTDButton Configuration::settings[6] = {};
 ZTDMenu Configuration::menus[BUTTON_COUNT-1] = {};
 Preferences* Configuration::savedStates = new Preferences();
-Wificonfig* Configuration::wifiConfig = new Wificonfig();
+ZTDWifi* Configuration::wifiConfig = new ZTDWifi();
 const char* Configuration::logopath = "/logos/";
 
-void Configuration::configmode() {
-
+void Configuration::wifiConfigmode() {
+	Configuration::wifiConfig->configmode();
 }
 
 bool Configuration::loadWifiConfig() {
-	if (!FILESYSTEM.exists("/config/wifiConfig.json")) {
-		Serial.println("[WARNING]: Config file not found!");
-		return false;
+	if (!FILESYSTEM.exists("/config/wificonfig.json")) {
+		Serial.println("[WARNING]: Config file not found, generating default!");
+		wifiConfig = new ZTDWifi();
+		DynamicJsonDocument doc(ZTDWifi::getJsonSize());
+		doc["wifi"] = *wifiConfig;
+		File configfile = FILESYSTEM.open("/config/wificonfig.json", "w");
+		serializeJson(doc, configfile);
+		configfile.close();
+		return true;
 	}
-	File configfile = FILESYSTEM.open("/config/wifiConfig.json");
+	File configfile = FILESYSTEM.open("/config/wificonfig.json");
 
-	DynamicJsonDocument doc(256);
+	DynamicJsonDocument doc(ZTDWifi::getJsonSize());
 
 	DeserializationError error = deserializeJson(doc, configfile);
 
@@ -50,19 +57,7 @@ bool Configuration::loadWifiConfig() {
 		configfile.close();
 		return false;
 	}
-	strlcpy(wifiConfig->ssid, doc["ssid"] | "FAILED", sizeof(wifiConfig->ssid));
-	strlcpy(wifiConfig->password, doc["password"] | "FAILED",
-			sizeof(wifiConfig->password));
-	strlcpy(wifiConfig->wifimode, doc["wifimode"] | "FAILED",
-			sizeof(wifiConfig->wifimode));
-	strlcpy(wifiConfig->hostname, doc["wifihostname"] | "zorntouchdeck",
-			sizeof(wifiConfig->hostname));
-
-	uint8_t attempts = doc["attempts"] | 10;
-	wifiConfig->attempts = attempts;
-
-	uint16_t attemptdelay = doc["attemptdelay"] | 500;
-	wifiConfig->attemptdelay = attemptdelay;
+	*wifiConfig = doc["wifi"];
 
 	configfile.close();
 
@@ -229,6 +224,61 @@ const char* Configuration::getLogoPath() {
 
 ZTDButton* Configuration::getSettingsMenu() {
 	return Configuration::settings;
+}
+
+void Configuration::dumpFS() {
+	/*DynamicJsonDocument doc(ZTDWifi::getJsonSize());
+	if (!FILESYSTEM.exists("/config/wificonfig.json")) {
+		Serial.println("[WARNING]: Config file not found!");
+		doc["wifi"] = *wifiConfig;
+	}
+	else
+	{
+		File configfile = FILESYSTEM.open("/config/wificonfig.json");
+		DeserializationError error = deserializeJson(doc, configfile);
+
+		if (error) {
+			Serial.println("[ERROR]: deserializeJson() error");
+			Serial.println(error.c_str());
+			configfile.close();
+			return;
+		}
+		configfile.close();
+	}
+	serializeJson(doc, Serial);*/
+	// The above line prints:
+	// {"sensor":"gps","time":1351824120,"data":[48.756080,2.302038]}
+
+	// Start a new line
+	String results[2] = {
+	"general.json",
+	"wificonfig.json"};
+	for (int i = 0; i < 2; i++) {
+
+		File file = SPIFFS.open("/config/"+results[i]);
+		if(!file){
+		    Serialprintln("Failed to %s file for reading", results[i]);
+		    return;
+		}
+		while(file.available()){
+		    Serial.write(file.read());
+		}
+		file.close();
+	}
+	File root = SPIFFS.open("/");
+
+	File file = root.openNextFile();
+
+	while(file){
+
+		Serial.print("FILE: ");
+		Serial.println(file.name());
+
+		file = root.openNextFile();
+	}
+
+	Serial.println();
+
 }
 
 } /* namespace ZTD */

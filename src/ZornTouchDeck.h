@@ -2,18 +2,19 @@
 
 #include <iostream>
 #include <sstream>
-#include "src/CommonIncludes.h"
-#include "src/KeyboardHelper.h"
-#include "src/Configuration.h"
-#include "src/Screen.h"
-#include "src/ZTDMenu.h"
-#include "src/Printf.h"
-#include "src/WireframeDemo.h"
+#include "CommonIncludes.h"
+#include "KeyboardHelper.h"
+#include "Configuration.h"
+#include "Screen.h"
+#include "ZTDMenu.h"
+#include "Printf.h"
+#include "WireframeDemo.h"
 
-#include "src/ZTDJsonConvert.h"
+#include "ZTDJsonConvert.h"
 
+namespace ZTD {
+AsyncWebServer webserver(80);
 
-using namespace ZTD;
 
 bool loadingDone = false;
 WireframeDemo *wireframeDemo;
@@ -394,4 +395,6 @@ void loop() {
 			}
 		}
 	}
+}
+
 }

@@ -12,6 +12,7 @@
 #include "ZTDJsonConvert.h"
 #include "ZTDMenu.h"
 #include "GeneralConfig.h"
+#include "ZTDWifi.h"
 namespace ZTD {
 
 class Configuration {
@@ -52,7 +53,7 @@ public:
 		return s;
 	}
 
-	void configmode();
+	void wifiConfigmode();
 	bool loadWifiConfig();
 	bool loadConfig(String value);
 	bool checkfile(const char *filename);
@@ -69,10 +70,11 @@ public:
 	static GeneralConfig* getGConf();
 	static void setGConf(GeneralConfig *generalConfig);
 	static const  char* getLogoPath();
+	static void dumpFS();
 
 	static Preferences* savedStates;
 
-	static Wificonfig* wifiConfig;
+	static ZTDWifi* wifiConfig;
 
 	char jsonfilefail[32] = "";
 

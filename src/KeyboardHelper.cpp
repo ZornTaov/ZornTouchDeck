@@ -283,7 +283,8 @@ void KeyboardHelper::sendOptionCombo(int value) {
 void KeyboardHelper::specialFunction(int value) {
 	switch (value) {
 	case 1: // Enter config mode
-		Configuration::instance()->configmode();
+		//Configuration::instance()->wifiConfigmode();
+		Configuration::dumpFS();
 		break;
 	case 2: // Display Brightness Down
 		if (Screen::instance()->ledBrightness > 25) {

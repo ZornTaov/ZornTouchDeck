@@ -9,6 +9,7 @@
 #include "ZTDMenu.h"
 #include "GeneralConfig.h"
 #include <ArduinoJson/Object/ObjectShortcuts.hpp>
+#include "ZTDWifi.h"
 namespace ZTD {
 
 //=================================================================
@@ -137,7 +138,31 @@ size_t GeneralConfig::getJsonSize() {
 	return 7 * JSON_STRING_SIZE(64) + JSON_OBJECT_SIZE(18) + JSON_ARRAY_SIZE(BUTTON_COUNT) + JSON_STRING_SIZE(64) * (BUTTON_COUNT);
 }
 
-size_t Wificonfig::getJsonSize() {
+//=================================================================
+// ZTDWifi Convert
+//=================================================================
+void convertToJson(const ZTDWifi &src, JsonVariant dst) {
+	dst["ssid"] = src.ssid;
+	dst["password"] = src.password;
+	dst["wifimode"] = src.wifimode;
+	dst["wifihostname"] = src.hostname;
+
+	dst["attempts"] = src.attempts;
+	dst["attemptdelay"] = src.attemptdelay;
+}
+
+void convertFromJson(JsonVariantConst src, ZTDWifi &dst) {
+	strcpy(dst.ssid, src["ssid"] | "FAILED");
+	strcpy(dst.password, src["password"] | "FAILED");
+	strcpy(dst.wifimode, src["wifimode"] | "FAILED");
+	strcpy(dst.hostname, src["wifihostname"] | "zorntouchdeck");
+
+	dst.attempts = src["attempts"] | 10;
+
+	dst.attemptdelay = src["attemptdelay"] | 500;
+}
+
+size_t ZTDWifi::getJsonSize() {
 	return JSON_STRING_SIZE(64) + JSON_STRING_SIZE(64) + JSON_STRING_SIZE(9) + JSON_STRING_SIZE(64) + JSON_OBJECT_SIZE(2);
 }
 
